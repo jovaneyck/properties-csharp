@@ -1,46 +1,45 @@
 ﻿using FsCheck;
-using NUnit.Framework;
-using PropertyAttribute = FsCheck.NUnit.PropertyAttribute;
+using Xunit;
+using PropertyAttribute = FsCheck.Xunit.PropertyAttribute;
 
 namespace properties_csharp;
 
-[TestFixture]
 public class AdditionTests
 {
     private static int Add(int a, int b) => a + b;
     
-    [Test]
+    [Fact]
     public void A_SumsCorrectly()
     {
-        Assert.That(Add(0,3), Is.EqualTo(3));
-        Assert.That(Add(4,0), Is.EqualTo(4));
-        Assert.That(Add(2,3), Is.EqualTo(5));
+        Assert.Equal(3, Add(0, 3));
+        Assert.Equal(4, Add(4, 0));
+        Assert.Equal(5, Add(2, 3));
     }
 
     [Property]
     public void ZeroElement(int x)
     {
-        Assert.That(Add(x,0), Is.EqualTo(x));
-        Assert.That(Add(0,x), Is.EqualTo(x));
+        Assert.Equal(x, Add(0, x));
+        Assert.Equal(x, Add(x, 0));
     }
     
     [Property]
     public void Commutativity(int x, int y)
     {
-        Assert.That(Add(x,y), Is.EqualTo(Add(y,x)));
+        Assert.Equal(Add(x, y), Add(y, x));
     }
 
     [Property]
     public void D_AlwaysLargerThanInputForPositiveInputs(PositiveInt x, PositiveInt y)
     {
         var sum = Add(x.Item, y.Item);
-        Assert.That(sum >= x.Item, Is.True);
-        Assert.That(sum >= y.Item, Is.True);
+        Assert.True(sum >= x.Item);
+        Assert.True(sum >= y.Item);
     }
     
     [Property]
     public void E_PeanoSuccessor(int x, int y)
     {
-        Assert.That(Add(x, y), Is.EqualTo(Add(1, Add(x, y - 1))));
+        Assert.Equal(Add(x, y), Add(1, Add(x, y - 1)));
     }
 }
