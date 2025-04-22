@@ -92,10 +92,13 @@ public class XmlTests
         return text;
     }
 
+    //[Property(Replay = "(6386861553722905307,8220442266619396519)")]
     [Property]
     public Property Serialize_Deserialize_Idempotent_Property()
     {
-        var stringGen = ArbMap.Default.ArbFor<XmlEncodedString>().Generator.Select(s=>s.Item);
+        var xmlStringGen = ArbMap.Default
+            .ArbFor<XmlEncodedString>().Generator.Select(s=>
+            s.Item.Replace("\r\n", "\n").Replace("\r", "\n"));
 
         //https://www.datypic.com/sc/xsd/t-xsd_NMTOKEN.html
         var countryGen = Gen.NonEmptyListOf(
@@ -113,11 +116,11 @@ public class XmlTests
             select $"{num1}{num2}{num3}-{az1}{az2}";
         
         var usAddressArb =
-            (from city in stringGen
+            (from city in xmlStringGen
             from country in countryGen
-            from name in stringGen
-            from state in stringGen
-            from street in stringGen
+            from name in xmlStringGen
+            from state in xmlStringGen
+            from street in xmlStringGen
             from zip in ArbMap.Default.ArbFor<decimal>().Generator
             select new UsAddress
             {
@@ -128,13 +131,15 @@ public class XmlTests
                 Street = street,
                 Zip = zip
             }).ToArbitrary();
-        
+
+        var dateGenerator = ArbMap.Default.ArbFor<DateTime>().Generator
+            .Select(d=>d.Date);
         var itemArb =
-            (from comment in stringGen
+            (from comment in xmlStringGen
                 from qty in ArbMap.Default.ArbFor<PositiveInt>().Generator.Select(pi=>pi.Item)
                 from partNum in partNumGen
-                from productName in stringGen
-                from shipdate in ArbMap.Default.ArbFor<DateTime>().Generator
+                from productName in xmlStringGen
+                from shipdate in dateGenerator
                 from usPrice in ArbMap.Default.ArbFor<decimal>().Generator
                 select new ItemsItem
                 {
@@ -143,16 +148,17 @@ public class XmlTests
                     ProductName = productName,
                     PartNum =  partNum,
                     ShipDate = shipdate,
+                    ShipDateSpecified = true,
                     UsPrice = usPrice
                 }).ToArbitrary();
         var itemsArb =
             itemArb.Generator.ListOf().ToArbitrary();
         
         var purchaseOrderArb =
-            (from comment in stringGen
+            (from comment in xmlStringGen
                 from billTo in usAddressArb.Generator
                 from shipTo in usAddressArb.Generator
-                from orderDate in ArbMap.Default.ArbFor<DateTime>().Generator
+                from orderDate in dateGenerator
                 from items in itemsArb.Generator
                 select new PurchaseOrderType
                 {
@@ -160,6 +166,7 @@ public class XmlTests
                     BillTo = billTo,
                     ShipTo = shipTo,
                     OrderDate = orderDate,
+                    OrderDateSpecified = true,
                     Items = new Collection<ItemsItem>(items.ToArray())
                 }).ToArbitrary();
         
@@ -171,9 +178,9 @@ public class XmlTests
                 var parser = new PurchaseOrderParser();
                 var serialized = parser.Serialize(po);
                 var deserialized = parser.Parse(serialized);
-                
-                return (deserialized.IsSuccess)
-                    .Label($"{StreamToString(serialized)} - {string.Join(",",deserialized.Error?.Select(e=>$"{e.Severity}: {e.Message}") ?? Array.Empty<string?>()!)}");
+                return (deserialized.IsSuccess).And(() => Assert.Equivalent(po, deserialized.Value))
+                    .Label($"serialized: {StreamToString(serialized)}")
+                    .Label($"parse errors: {string.Join(",",deserialized.Error?.Select(e=>$"{e.Severity}: {e.Message}") ?? Array.Empty<string?>()!)}");
             });
     }
 }
