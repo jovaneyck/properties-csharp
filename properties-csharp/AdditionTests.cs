@@ -109,7 +109,7 @@ public class AdditionTests(ITestOutputHelper output)
     {
         var generator =
             Arbitraries.ValidEmails.Generator;
-        
+
         var xes = generator.Sample(10);
         // output.WriteLine($"xes: {string.Join("\n", xes.Select(e=>e.ToString()).ToArray())}");
     }

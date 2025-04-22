@@ -50,9 +50,9 @@ public class Coins
             CoinArbs.CoinArb(),
             CoinArbs.CoinArb(),
             (c1, c2) => Prop.ToProperty(() => true)
-                .Classify(c1.Amount+c2.Amount <= Coin.MAX_COINS, "OK")
-                .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount+c2.Amount)) < 3, "boundary")
-                .Classify(c1.Amount+c2.Amount > Coin.MAX_COINS, "overflow")
+                .Classify(c1.Amount + c2.Amount <= Coin.MAX_COINS, "OK")
+                .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount + c2.Amount)) < 3, "boundary")
+                .Classify(c1.Amount + c2.Amount > Coin.MAX_COINS, "overflow")
         );
     }
 
@@ -85,16 +85,16 @@ public class Coins
     {
         var (c1, c2) = pair;
         return Prop.ToProperty(() =>
-        {
-            var result = c1.Add(c2);
-            Assert.True(result.IsSuccess);
-            Assert.Equal(
-                c1.Amount + c2.Amount,
-                result.Value!.Amount);
-        })
-            .Classify(c1.Amount+c2.Amount <= Coin.MAX_COINS, "OK")
-            .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount+c2.Amount)) < 3, "boundary")
-            .Classify(c1.Amount+c2.Amount > Coin.MAX_COINS, "overflow");
+            {
+                var result = c1.Add(c2);
+                Assert.True(result.IsSuccess);
+                Assert.Equal(
+                    c1.Amount + c2.Amount,
+                    result.Value!.Amount);
+            })
+            .Classify(c1.Amount + c2.Amount <= Coin.MAX_COINS, "OK")
+            .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount + c2.Amount)) < 3, "boundary")
+            .Classify(c1.Amount + c2.Amount > Coin.MAX_COINS, "overflow");
     }
 
     [Property(Arbitrary = [typeof(CoinArbs)], MaxTest = 1_000_000)]
@@ -102,15 +102,15 @@ public class Coins
     {
         var (c1, c2) = pair;
         return Prop.ToProperty(() =>
-        {
-            var result = c1.Add(c2);
-            Assert.False(result.IsSuccess);
-        })
-            .Classify(c1.Amount+c2.Amount <= Coin.MAX_COINS, "OK")
-            .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount+c2.Amount)) < 3, "boundary")
-            .Classify(c1.Amount+c2.Amount > Coin.MAX_COINS, "overflow");
+            {
+                var result = c1.Add(c2);
+                Assert.False(result.IsSuccess);
+            })
+            .Classify(c1.Amount + c2.Amount <= Coin.MAX_COINS, "OK")
+            .Classify(Math.Abs(Coin.MAX_COINS - (c1.Amount + c2.Amount)) < 3, "boundary")
+            .Classify(c1.Amount + c2.Amount > Coin.MAX_COINS, "overflow");
     }
-    
+
     [Property(Arbitrary = [typeof(CoinArbs)])]
     public Property Addition_OnePropertyToRuleThemAll(Coin2 c1, Coin2 c2)
     {
@@ -128,12 +128,10 @@ public class Coins
                     Assert.False(result.IsSuccess);
                 }
             })
-            .Classify(c1.Amount+c2.Amount <= Coin2.MAX_COINS, "OK")
-            .Classify(Math.Abs(Coin2.MAX_COINS - (c1.Amount+c2.Amount)) < 3, "boundary")
-            .Classify(c1.Amount+c2.Amount > Coin2.MAX_COINS, "overflow");
+            .Classify(c1.Amount + c2.Amount <= Coin2.MAX_COINS, "OK")
+            .Classify(Math.Abs(Coin2.MAX_COINS - (c1.Amount + c2.Amount)) < 3, "boundary")
+            .Classify(c1.Amount + c2.Amount > Coin2.MAX_COINS, "overflow");
     }
-    
-    
 }
 
 /// <summary>
@@ -164,7 +162,7 @@ public static class CoinArbs
             })
             .ToArbitrary();
     }
-    
+
     public static Arbitrary<OverflowingPairOfCoins> OverflowingPairOfCoinsArb()
     {
         return CoinArb().Generator.SelectMany(c =>
@@ -174,17 +172,17 @@ public static class CoinArbs
             })
             .ToArbitrary();
     }
-    
+
     public static Arbitrary<Coin2> Coin2Arb()
     {
         return
             Gen.OneOf(
-                Gen.Choose(0, 3),
-                Gen.Choose(Coin2.MAX_COINS - 3, Coin2.MAX_COINS),
-                Gen.Choose(0, Coin2.MAX_COINS)
+                    Gen.Choose(0, 3),
+                    Gen.Choose(Coin2.MAX_COINS - 3, Coin2.MAX_COINS),
+                    Gen.Choose(0, Coin2.MAX_COINS)
                 )
-            .Select(i => new Coin2(i))
-            .ToArbitrary();
+                .Select(i => new Coin2(i))
+                .ToArbitrary();
     }
 }
 
