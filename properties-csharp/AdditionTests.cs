@@ -11,7 +11,7 @@ public class AdditionTests(ITestOutputHelper output)
 {
     private static int Add(int a, int b)
     {
-        return a + b;
+        return a - b;
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class AdditionTests(ITestOutputHelper output)
             .VerboseCheckThrowOnFailure();
     }
 
-    [Property]
+    [Property(Replay="11173762298825490426,5811471820487309261")]
     public void Commutativity(int x, int y)
     {
         Assert.Equal(Add(x, y), Add(y, x));

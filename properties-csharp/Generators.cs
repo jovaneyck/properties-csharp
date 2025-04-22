@@ -15,6 +15,14 @@ public class Generators(ITestOutputHelper output)
         var xes = intGen.Sample(100);
         output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.ToString()).ToArray())}");
     }
+    
+    [Fact]
+    public void Generate_Strings()
+    {
+        var stringGen = ArbMap.Default.GeneratorFor<string>();
+        var xes = stringGen.Sample(10);
+        output.WriteLine($"{string.Join("\n", xes)}");
+    }
 
     public enum State
     {
@@ -38,10 +46,25 @@ public class Generators(ITestOutputHelper output)
     [Fact]
     public void Constraining_Values()
     {
-        var intGen = ArbMap.Default.GeneratorFor<int>()
-            .Where(i => i > 0);
+        var intGen = ArbMap.Default.GeneratorFor<PositiveInt>();
         var xes = intGen.Sample(100);
-        output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.ToString()).ToArray())}");
+        output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.Item.ToString()).ToArray())}");
+    }
+    
+    [Fact]
+    public void Combining_Generators()
+    {
+        var one = Gen.Constant(1);
+        var two = Gen.Constant(2);
+        var three = Gen.Constant(3);
+        var oneOrTwoOrThree = Gen.OneOf(one, two, three);
+        var listOfOneTwoThree = Gen.ListOf(oneOrTwoOrThree);
+            
+        var xes = listOfOneTwoThree.Sample(10);
+        foreach (var s in xes)
+        {
+            output.WriteLine($"{string.Join(",", s)}");
+        }
     }
 
 
@@ -60,11 +83,19 @@ public class Generators(ITestOutputHelper output)
             from tld in tldGen
             select $"{local}@{domain}.{tld}";
 
-        var xes = emailGen.Sample(100);
+        var xes = emailGen.Sample(10);
 
         output.WriteLine($"xes: {string.Join("\n", xes)}");
     }
 
+    [Fact]
+    public void _1d6_Generator()
+    {
+        var _1d6Gen = Gen.Choose(1, 6);
+        var xes = _1d6Gen.Sample(100);
+        output.WriteLine($"{string.Join(",", xes)}");
+    }
+    
     [Property(MaxTest = 10_000)]
     public Property Checking_Distributions()
     {
@@ -104,8 +135,8 @@ public class Generators(ITestOutputHelper output)
     [Property(MaxTest = 10_000)]
     public Property Correct_2d6_Alternative()
     {
-        var _1d6Gen = Gen.Choose(1, 6);
-        var _2d6Gen =
+        Gen<int> _1d6Gen = Gen.Choose(1, 6);
+        Gen<int> _2d6Gen =
             from one in _1d6Gen
             from other in _1d6Gen
             select one + other;
