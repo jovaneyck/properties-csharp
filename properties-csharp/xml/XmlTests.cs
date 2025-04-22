@@ -42,7 +42,7 @@ public class PurchaseOrderParser
         if (validationEvents.Any())
             return Result<PurchaseOrderType, ValidationEventArgs[]>.Failure(validationEvents.ToArray());
 
-        return Result<PurchaseOrderType, ValidationEventArgs[]>.Ok(po);
+        return Result<PurchaseOrderType, ValidationEventArgs[]>.Success(po);
     }
 
     public Stream Serialize(PurchaseOrderType purchaseOrder)
@@ -187,7 +187,7 @@ public class XmlTests
 
 public record Result<TOk, TError>(TOk? Value, TError? Error)
 {
-    public static Result<TOk, TError> Ok(TOk v)
+    public static Result<TOk, TError> Success(TOk v)
     {
         return new Result<TOk, TError>(v, default);
     }
@@ -197,6 +197,6 @@ public record Result<TOk, TError>(TOk? Value, TError? Error)
         return new Result<TOk, TError>(default, e);
     }
 
-    public bool IsError => Error != null;
-    public bool IsSuccess => !IsError;
+    public bool IsFailure => Error != null;
+    public bool IsSuccess => !IsFailure;
 }
