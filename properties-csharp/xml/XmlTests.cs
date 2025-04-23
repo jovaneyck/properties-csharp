@@ -99,7 +99,7 @@ public class XmlTests
 
     //[Property(Replay = "(6386861553722905307,8220442266619396519)")]
     [Property(Arbitrary = [typeof(PurchaseOrderArbs)])]
-    public Property Serialize_Deserialize_Idempotent_Property(PurchaseOrderType po)
+    public Property Serialize_Deserialize_Inverse_Property(PurchaseOrderType po)
     {
         var parser = new PurchaseOrderParser();
         var serialized = parser.Serialize(po);
@@ -237,11 +237,6 @@ public static class PurchaseOrderArbs
         return Gen.OneOf(
             CorruptXmlGen(),
             XsdValidationErrorGen(),
-            ValidPurchaseOrderXmlGen(),
-            ValidPurchaseOrderXmlGen(),
-            ValidPurchaseOrderXmlGen(),
-            ValidPurchaseOrderXmlGen(),
-            ValidPurchaseOrderXmlGen(),
             ValidPurchaseOrderXmlGen())
             .ToArbitrary();
     }
