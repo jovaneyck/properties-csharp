@@ -112,7 +112,7 @@ public class XmlTests
     }
 
     [Property(Arbitrary = [typeof(PurchaseOrderArbs)])]
-    public Property Serialize_Deserialize_HandlesAllInputs_Property(PurchaseOrderArbs.PotentialPurchaseOrderXml xml)
+    public Property Parse_HandlesAllInputs_Property(PurchaseOrderArbs.PotentialPurchaseOrderXml xml)
     {
         var parser = new PurchaseOrderParser();
         return Prop
