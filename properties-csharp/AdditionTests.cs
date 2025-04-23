@@ -7,7 +7,7 @@ using PropertyAttribute = FsCheck.Xunit.PropertyAttribute;
 
 namespace properties_csharp;
 
-public class AdditionTests(ITestOutputHelper output)
+public partial class AdditionTests(ITestOutputHelper output)
 {
     private static int Add(int a, int b)
     {
@@ -78,21 +78,24 @@ public class AdditionTests(ITestOutputHelper output)
     {
         Assert.Equal(Add(x, y), Add(1, Add(x, y - 1)));
     }
+    
+    [GeneratedRegex(@"(.*)@(.*)\.(.*)")]
+    private static partial Regex MyRegex();
 
     public string? ExtractDomain(string emailaddress)
     {
-        var match = Regex.Match(emailaddress, @"(.*)@(.*)\.(.*)");
+        var match = MyRegex().Match(emailaddress);
         return !match.Success ? null : match.Groups[2].Value;
     }
 
     [Fact]
-    public void ExtractsDomain()
+    public void ExtractsDomain_FromValidEmails()
     {
         Assert.Equal("gmail", ExtractDomain("jo.vaneyck@gmail.com"));
     }
 
     [Fact]
-    public void ExtractsDomain2()
+    public void CannotExtractDomain_FromInvalidEmail()
     {
         Assert.Null(ExtractDomain("not_an_email"));
     }

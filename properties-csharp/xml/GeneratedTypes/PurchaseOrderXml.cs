@@ -112,6 +112,7 @@ namespace PurchaseOrderXml
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         private System.Collections.ObjectModel.Collection<ItemsItem> _item;
         
+        [System.ComponentModel.DataAnnotations.RequiredAttribute(AllowEmptyStrings=true)]
         [System.Xml.Serialization.XmlElementAttribute("item", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public System.Collections.ObjectModel.Collection<ItemsItem> Item
         {
@@ -122,18 +123,6 @@ namespace PurchaseOrderXml
             private set
             {
                 _item = value;
-            }
-        }
-        
-        /// <summary>
-        /// <para xml:lang="en">Gets a value indicating whether the Item collection is empty.</para>
-        /// </summary>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool ItemSpecified
-        {
-            get
-            {
-                return (this.Item.Count != 0);
             }
         }
         

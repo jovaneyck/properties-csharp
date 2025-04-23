@@ -54,13 +54,11 @@ public class Generators(ITestOutputHelper output)
     [Fact]
     public void Combining_Generators()
     {
-        var one = Gen.Constant(1);
-        var two = Gen.Constant(2);
-        var three = Gen.Constant(3);
-        var oneOrTwoOrThree = Gen.OneOf(one, two, three);
-        var listOfOneTwoThree = Gen.ListOf(oneOrTwoOrThree);
+        var oneOrTwoOrThree = Gen.Choose(1,3);
+        var ten = Gen.Constant(10);
+        var gen = Gen.ListOf(Gen.OneOf(oneOrTwoOrThree, ten));
             
-        var xes = listOfOneTwoThree.Sample(10);
+        var xes = gen.Sample(10);
         foreach (var s in xes)
         {
             output.WriteLine($"{string.Join(",", s)}");

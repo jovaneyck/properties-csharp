@@ -13,24 +13,32 @@ public record Coin(int Amount)
     public Result<Coin, string> Add(Coin other)
     {
         var sum = Amount + other.Amount;
-        return sum < MAX_COINS
+        return sum <= MAX_COINS
             ? Result<Coin, string>.Success(new Coin(sum))
             : Result<Coin, string>.Failure("Overflow");
     }
 }
 
-public class Coins
+public class CoinTests
 {
     [Fact]
-    public void NormalAddition()
+    public void Normal_Addition()
     {
         var result = new Coin(1).Add(new Coin(2));
         Assert.True(result.IsSuccess);
         Assert.Equal(3, result.Value!.Amount);
     }
+    
+    [Fact]
+    public void Boundary_Addition()
+    {
+        var result = new Coin(Coin.MAX_COINS - 1).Add(new Coin(1));
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Coin.MAX_COINS, result.Value!.Amount);
+    }
 
     [Fact]
-    public void OverflowAddition()
+    public void Overflow_Addition()
     {
         var result = new Coin(Coin.MAX_COINS).Add(new Coin(1));
         Assert.False(result.IsSuccess);
@@ -55,9 +63,30 @@ public class Coins
                 .Classify(c1.Amount + c2.Amount > Coin.MAX_COINS, "overflow")
         );
     }
+    
+    [Property(StartSize = 1_000_000)]
+    public Property NormalAddition_Property()
+    {
+        var coinArb = ArbMap.Default
+            .GeneratorFor<PositiveInt>()
+            .Select(pi=>new Coin(pi.Item))
+            .ToArbitrary();
 
+        return Prop.ForAll(
+            coinArb,
+            coinArb,
+            (c1, c2) =>
+            {
+                var result = c1.Add(c2);
+                Assert.True(result.IsSuccess);
+                Assert.Equal(
+                    c1.Amount + c2.Amount,
+                    result.Value!.Amount);
+            });
+    }
+    
     [Property(Arbitrary = [typeof(CoinArbs)])]
-    public Property NormalAddition_Property(Coin c1, Coin c2)
+    public Property NormalAddition_Property2(Coin c1, Coin c2)
     {
         return (c1.Amount + c2.Amount < Coin.MAX_COINS).Implies(() =>
         {
@@ -112,16 +141,38 @@ public class Coins
     }
 
     [Property(Arbitrary = [typeof(CoinArbs)])]
-    public Property Addition_OnePropertyToRuleThemAll(Coin2 c1, Coin2 c2)
+    public Property Addition_OnePropertyToRuleThemAll(Coin c1, Coin c2)
     {
         return Prop.ToProperty(() =>
             {
                 var result = c1.Add(c2);
-                var c = new Coin2(c1.Amount + c2.Amount);
-                if (c.Amount >= 0 && c.Amount <= Coin2.MAX_COINS)
+                var sum = c1.Amount + c2.Amount;
+                if (sum <= Coin.MAX_COINS)
                 {
                     Assert.True(result.IsSuccess);
-                    Assert.Equal(c, result.Value);
+                    Assert.Equal(sum, result.Value!.Amount);
+                }
+                else
+                {
+                    Assert.False(result.IsSuccess);
+                }
+            })
+            .Classify(c1.Amount + c2.Amount <= Coin2.MAX_COINS, "OK")
+            .Classify(Math.Abs(Coin2.MAX_COINS - (c1.Amount + c2.Amount)) < 3, "boundary")
+            .Classify(c1.Amount + c2.Amount > Coin2.MAX_COINS, "overflow");
+    }
+    
+    [Property(Arbitrary = [typeof(CoinArbs)])]
+    public Property Addition_OnePropertyToRuleThemAll2(Coin2 c1, Coin2 c2)
+    {
+        return Prop.ToProperty(() =>
+            {
+                var result = c1.Add(c2);
+                var sum = c1.Amount + c2.Amount;
+                if (sum <= Coin.MAX_COINS)
+                {
+                    Assert.True(result.IsSuccess);
+                    Assert.Equal(sum, result.Value!.Amount);
                 }
                 else
                 {
