@@ -105,7 +105,7 @@ public partial class AdditionTests(ITestOutputHelper output)
     {
         return Prop.ForAll(
             Arbitraries.ValidEmails,
-            e => Assert.Equal(e.Domain, ExtractDomain(e.ToString())));
+            e  => Assert.Equal(e.Domain, ExtractDomain(e.ToString())));
     }
 
     [Fact]
