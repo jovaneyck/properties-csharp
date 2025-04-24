@@ -216,9 +216,11 @@ public static class CoinArbs
 
     public static Arbitrary<OverflowingPairOfCoins> OverflowingPairOfCoinsArb()
     {
-        return CoinArb().Generator.SelectMany(c =>
+        return CoinArb().Generator
+            .Where(c=>c.Amount > 0)
+            .SelectMany(c =>
             {
-                var min = Coin.MAX_COINS - c.Amount;
+                var min = Coin.MAX_COINS - c.Amount + 1;
                 return Gen.Choose(min, Coin.MAX_COINS).Select(r => new OverflowingPairOfCoins(c, new Coin(r)));
             })
             .ToArbitrary();

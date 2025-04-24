@@ -46,9 +46,10 @@ public class Generators(ITestOutputHelper output)
     [Fact]
     public void Constraining_Values()
     {
-        var intGen = ArbMap.Default.GeneratorFor<PositiveInt>();
-        var xes = intGen.Sample(100);
-        output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.Item.ToString()).ToArray())}");
+        var positiveIntGen = ArbMap.Default.GeneratorFor<int>()
+            .Where(i=> i >= 0);
+        var xes = positiveIntGen.Sample(100);
+        output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.ToString()).ToArray())}");
     }
     
     [Fact]
