@@ -16,6 +16,36 @@ public class Generators(ITestOutputHelper output)
         output.WriteLine($"xes: {string.Join(",", xes.Select(e => e.ToString()).ToArray())}");
     }
     
+    [Property(MaxTest = 10_000, StartSize = 0, EndSize = int.MaxValue)]
+    public Property Sampling_Int_Sizes(int i)
+    {
+        return Prop.ToProperty(() => true)
+                .Classify(i == 0, "zero")
+                .Classify(i is > 0 and < 10, "pos 0-ish")
+                .Classify(i is < 0 and > -10, "minus 0-ish")
+                //.Collect(i)
+                ;
+    }
+    [Property]
+    public Property Sampling_Int_Sizes_Custom_Generator()
+    {
+        var smallish = Gen.Choose(-1000, 1000);
+        var zero = Gen.Constant(0);
+        var allPos = Gen.Choose(0, int.MaxValue);
+        var allNeg = Gen.Choose(int.MinValue, 0);
+        var broadIntGen = Gen.OneOf(
+            Enumerable.Range(0, 100).Select(_ => allPos).ToArray()
+                .Union(Enumerable.Range(0, 100).Select(_ => allNeg).ToArray())
+                .Union([smallish,zero]));
+        
+        return Prop.ForAll(
+            broadIntGen.ToArbitrary(), 
+            n => Prop.ToProperty(() => true)
+                .Classify(n > 0 && n<100, "around 100")
+                .Classify(n<0 && n>-100, "around 100")
+                .Collect(n));
+    }
+    
     [Fact]
     public void Generate_Strings()
     {
